@@ -29,7 +29,7 @@ public class MaPremiereFenetreJavaFX extends Application {
         imageView.setFitHeight(455);
         imageView.setFitWidth(500);
         imageView.setPreserveRatio(true);
-        Button buttonOne = new Button("Back");
+        Button buttonOne = new Button("close");
         GridPane gridPane = new GridPane();
         gridPane.setMinSize(400, 200);
         gridPane.setPadding(new Insets(10, 10, 10, 10));
@@ -37,10 +37,12 @@ public class MaPremiereFenetreJavaFX extends Application {
         gridPane.setHgap(5);
         gridPane.add(buttonOne, 0, 5);
         gridPane.add(imageView,0,2);
+        buttonOne.setOnAction(e ->primaryStage.close());
         Scene scene = new Scene(gridPane,400,600);
-        scene.getStylesheets().add("/amuhome/s24019037/IdeaProjects/TpIHM/src/main/resources/exercice3/Bonjour.css");
+        scene.getStylesheets().add("/exercice3/Bonjour.css");
         primaryStage.setScene(scene);
         primaryStage.setTitle("La page d'un Pro de JavaFX");
         primaryStage.show();
     }
+
 }
