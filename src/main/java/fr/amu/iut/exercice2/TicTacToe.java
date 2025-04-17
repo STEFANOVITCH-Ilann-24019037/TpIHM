@@ -11,112 +11,114 @@ import javafx.stage.Stage;
 
 public class TicTacToe extends Application {
 
-    private Button[][] buttons = new Button[3][3];
-    private boolean playerXTurn = true;
-    private Image xImage;
-    private Image oImage;
-    private Image emptyImage;
+    private Button[][] boutons = new Button[3][3];
+    private boolean tourJoueurX = true;
+    private Image imageX;
+    private Image imageO;
+    private Image imageVide;
 
     @Override
-    public void start(Stage primaryStage) {
-        // Charger les images depuis les ressources
-        xImage = loadImage("/exercice2/Croix.png");
-        oImage = loadImage("/exercice2/Rond.png");
-        emptyImage = loadImage("/exercice2/Vide.png");
+    public void start(Stage fenetrePrincipale) {
+        imageX = chargerImage("/exercice2/Croix.png");
+        imageO = chargerImage("/exercice2/Rond.png");
+        imageVide = chargerImage("/exercice2/Vide.png");
 
 
-        GridPane gridPane = new GridPane();
+        GridPane grille = new GridPane();
 
-        for (int row = 0; row < 3; row++) {
-            for (int col = 0; col < 3; col++) {
-                Button button = new Button();
-                button.setPrefSize(100, 100);
-                button.setGraphic(new ImageView(emptyImage));
-                button.setOnAction(event -> onButtonClick(button));
-                buttons[row][col] = button;
-                gridPane.add(button, col, row);
+        for (int ligne = 0; ligne < 3; ligne++) {
+            for (int colonne = 0; colonne < 3; colonne++) {
+                Button bouton = new Button();
+                bouton.setPrefSize(100, 100);
+                bouton.setGraphic(new ImageView(imageVide));
+                bouton.setOnAction(event -> surClicBouton(bouton));
+                boutons[ligne][colonne] = bouton;
+                grille.add(bouton, colonne, ligne);
             }
         }
 
-        Scene scene = new Scene(gridPane);
-        primaryStage.setTitle("Tic Tac Toe");
-        primaryStage.setScene(scene);
-        primaryStage.show();
+        Scene scene = new Scene(grille);
+        fenetrePrincipale.setTitle("Tic Tac Toe");
+        fenetrePrincipale.setScene(scene);
+        fenetrePrincipale.show();
     }
 
-    private Image loadImage(String path) {
+    private Image chargerImage(String chemin) {
         try {
-            return new Image(getClass().getResource(path).toExternalForm());
+            return new Image(getClass().getResource(chemin).toExternalForm());
         } catch (Exception e) {
-            System.err.println("Could not load image: " + path);
+            System.err.println("Impossible de charger l'image : " + chemin);
             return null;
         }
     }
 
-    private void onButtonClick(Button button) {
-        ImageView currentImageView = (ImageView) button.getGraphic();
-        if (currentImageView.getImage().equals(emptyImage)) {
-            if (playerXTurn) {
-                button.setGraphic(new ImageView(xImage));
-            } else {
-                button.setGraphic(new ImageView(oImage));
-            }
-            playerXTurn = !playerXTurn;
+    private void surClicBouton(Button bouton) {
 
-            if (checkForWin()) {
-                showAlert("Player " + (playerXTurn ? "O" : "X") + " wins!");
-                resetGame();
-            } else if (isBoardFull()) {
-                showAlert("It's a draw!");
-                resetGame();
+        ImageView imageActuelle = (ImageView) bouton.getGraphic();
+
+        if (imageActuelle.getImage().equals(imageVide)) {
+            if (tourJoueurX) {
+                bouton.setGraphic(new ImageView(imageX));
+            } else {
+                bouton.setGraphic(new ImageView(imageO));
+            }
+            tourJoueurX = !tourJoueurX;
+
+            if (verifierVictoire()) {
+                afficherAlerte("Le joueur " + (tourJoueurX ? "O" : "X") + " a gagné !");
+                reinitialiserJeu();
+            } else if (plateauPlein()) {
+                afficherAlerte("Match nul !");
+                reinitialiserJeu();
             }
         }
     }
 
-    private boolean checkForWin() {
-        ImageView[][] board = new ImageView[3][3];
+    private boolean verifierVictoire() {
+        ImageView[][] plateau = new ImageView[3][3];
 
-        for (int row = 0; row < 3; row++) {
-            for (int col = 0; col < 3; col++) {
-                board[row][col] = (ImageView) buttons[row][col].getGraphic();
+        for (int ligne = 0; ligne < 3; ligne++) {
+            for (int colonne = 0; colonne < 3; colonne++) {
+                plateau[ligne][colonne] = (ImageView) boutons[ligne][colonne].getGraphic();
             }
         }
 
-        for (int row = 0; row < 3; row++) {
-            if (board[row][0].getImage().equals(board[row][1].getImage()) &&
-                    board[row][1].getImage().equals(board[row][2].getImage()) &&
-                    !board[row][0].getImage().equals(emptyImage)) {
+        for (int ligne = 0; ligne < 3; ligne++) {
+            if (plateau[ligne][0].getImage().equals(plateau[ligne][1].getImage()) &&
+                    plateau[ligne][1].getImage().equals(plateau[ligne][2].getImage()) &&
+                    !plateau[ligne][0].getImage().equals(imageVide)) {
+                return true;
+            }
+        }
+        for (int colonne = 0; colonne < 3; colonne++) {
+            if (plateau[0][colonne].getImage().equals(plateau[1][colonne].getImage()) &&
+                    plateau[1][colonne].getImage().equals(plateau[2][colonne].getImage()) &&
+                    !plateau[0][colonne].getImage().equals(imageVide)) {
                 return true;
             }
         }
 
-        for (int col = 0; col < 3; col++) {
-            if (board[0][col].getImage().equals(board[1][col].getImage()) &&
-                    board[1][col].getImage().equals(board[2][col].getImage()) &&
-                    !board[0][col].getImage().equals(emptyImage)) {
-                return true;
-            }
-        }
-
-        if (board[0][0].getImage().equals(board[1][1].getImage()) &&
-                board[1][1].getImage().equals(board[2][2].getImage()) &&
-                !board[0][0].getImage().equals(emptyImage)) {
+        // Vérification de la diagonale principale (de gauche à droite)
+        if (plateau[0][0].getImage().equals(plateau[1][1].getImage()) &&
+                plateau[1][1].getImage().equals(plateau[2][2].getImage()) &&
+                !plateau[0][0].getImage().equals(imageVide)) {
             return true;
         }
 
-        if (board[0][2].getImage().equals(board[1][1].getImage()) &&
-                board[1][1].getImage().equals(board[2][0].getImage()) &&
-                !board[0][2].getImage().equals(emptyImage)) {
+        // Vérification de la diagonale secondaire (de droite à gauche)
+        if (plateau[0][2].getImage().equals(plateau[1][1].getImage()) &&
+                plateau[1][1].getImage().equals(plateau[2][0].getImage()) &&
+                !plateau[0][2].getImage().equals(imageVide)) {
             return true;
         }
 
         return false;
     }
 
-    private boolean isBoardFull() {
-        for (int row = 0; row < 3; row++) {
-            for (int col = 0; col < 3; col++) {
-                if (((ImageView) buttons[row][col].getGraphic()).getImage().equals(emptyImage)) {
+    private boolean plateauPlein() {
+        for (int ligne = 0; ligne < 3; ligne++) {
+            for (int colonne = 0; colonne < 3; colonne++) {
+                if (((ImageView) boutons[ligne][colonne].getGraphic()).getImage().equals(imageVide)) {
                     return false;
                 }
             }
@@ -124,22 +126,21 @@ public class TicTacToe extends Application {
         return true;
     }
 
-    private void showAlert(String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Game Over");
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+    private void afficherAlerte(String message) {
+        Alert alerte = new Alert(Alert.AlertType.INFORMATION);
+        alerte.setTitle("Fin de la partie");
+        alerte.setHeaderText(null);
+        alerte.setContentText(message);
+        alerte.showAndWait();
     }
 
-    private void resetGame() {
-        for (int row = 0; row < 3; row++) {
-            for (int col = 0; col < 3; col++) {
-                buttons[row][col].setGraphic(new ImageView(emptyImage));
+    private void reinitialiserJeu() {
+        for (int ligne = 0; ligne < 3; ligne++) {
+            for (int colonne = 0; colonne < 3; colonne++) {
+                boutons[ligne][colonne].setGraphic(new ImageView(imageVide));
             }
         }
-        playerXTurn = true;
+        tourJoueurX = true;
     }
-
 
 }
