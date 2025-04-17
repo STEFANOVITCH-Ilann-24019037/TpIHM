@@ -38,7 +38,7 @@ public class MaPremiereFenetreJavaFX extends Application {
         gridPane.add(buttonOne, 0, 5);
         gridPane.add(imageView,0,2);
         buttonOne.setOnAction(e ->primaryStage.close());
-        Scene scene = new Scene(gridPane,400,600);
+        Scene scene = new Scene(gridPane,400,550);
         scene.getStylesheets().add("/exercice3/Bonjour.css");
         primaryStage.setScene(scene);
         primaryStage.setTitle("La page d'un Pro de JavaFX");
