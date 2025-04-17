@@ -18,13 +18,7 @@ class Personnage extends Group {
     }
 
     public void deplacerAGauche() {
-        //    ****
-        //   *    *
-        //  *---   *
-        //   *    *
-        //    ****
 
-        //déplacement <----
         if (getLayoutX() >= LARGEUR_PERSONNAGE) {
             setLayoutX(getLayoutX() - LARGEUR_PERSONNAGE);
         }
@@ -34,12 +28,7 @@ class Personnage extends Group {
     }
 
     public void deplacerADroite(double largeurJeu) {
-        //    ****
-        //   *    *
-        //  *   ---*
-        //   *    *
-        //    ****
-        //déplacement ---->
+
         if (getLayoutX() < largeurJeu - LARGEUR_PERSONNAGE) {
             setLayoutX(getLayoutX() + LARGEUR_PERSONNAGE);
         }
@@ -49,13 +38,9 @@ class Personnage extends Group {
     }
 
     public void deplacerEnBas(double hauteurJeu) {
-        //    *****
-        //   *     *
-        //  *   |   *
-        //   *  |  *
-        //    *****
-        if (getLayoutX() < hauteurJeu - LARGEUR_PERSONNAGE) {
-            setLayoutX(getLayoutX() + LARGEUR_PERSONNAGE);
+
+        if (getLayoutY() < hauteurJeu - LARGEUR_PERSONNAGE) {
+            setLayoutY(getLayoutY() + LARGEUR_PERSONNAGE);
         }
         if (!direction.equals("bas")) {
             direction = "bas";
@@ -63,12 +48,32 @@ class Personnage extends Group {
     }
 
     public void deplacerEnHaut() {
-        //    *****
-        //   *  |  *
-        //  *   |   *
-        //   *     *
-        //    *****
 
+        if (getLayoutY() >= LARGEUR_PERSONNAGE) {
+            setLayoutY(getLayoutY() - LARGEUR_PERSONNAGE);
+        }
+        if (!direction.equals("haut")) {
+            direction = "haut";
+        }
+
+    }
+
+    public void deplacrcontinue(double largeurJeu,double hauteurJeu){
+        switch (direction){
+            case "gauche":
+                deplacerAGauche();
+                break;
+            case "droite":
+                deplacerADroite(largeurJeu);
+                break;
+            case "bas":
+                deplacerEnBas(hauteurJeu);
+                break;
+            case"haut":
+                deplacerEnHaut();
+
+
+        }
     }
 
     boolean estEnCollision(Personnage autrePersonnage) {
