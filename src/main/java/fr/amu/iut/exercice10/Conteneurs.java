@@ -6,8 +6,6 @@ import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
-import java.net.URL;
-
 public class Conteneurs extends Application {
     public static void main(String[] args) {
         launch(args);
