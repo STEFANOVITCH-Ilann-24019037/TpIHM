@@ -4,6 +4,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 
+import java.util.ArrayList;
+
 public class Fantome extends Personnage {
 
     private Rectangle basCorps;
@@ -38,26 +40,40 @@ public class Fantome extends Personnage {
     }
 
     @Override
-    public void deplacerAGauche() {
-        super.deplacerAGauche();
+    public void deplacerAGauche(double largeurJeu, ArrayList<Obstacles> list) {
+        super.deplacerAGauche(largeurJeu,list);
+        if (contactMur(list)) super.deplacerADroite(largeurJeu, list);
+        retineDroite.setCenterX(oeilDroit.getCenterX()-1);
+        retineGauche.setCenterX(oeilGauche.getCenterX()-1);
     }
 
     @Override
-    public void deplacerADroite(double largeurJeu) {
-        super.deplacerADroite(largeurJeu);
+    public void deplacerADroite(double largeurJeu, ArrayList<Obstacles> list) {
+        super.deplacerADroite(largeurJeu,list);
+        if (contactMur(list)) super.deplacerAGauche(largeurJeu, list);
     }
 
     @Override
-    public void deplacerEnBas(double hauteurJeu) {
-        super.deplacerEnBas(hauteurJeu);
+    public void deplacerEnBas(double hauteurJeu, ArrayList<Obstacles> list) {
+        super.deplacerEnBas(hauteurJeu,list);
+        if (contactMur(list)) super.deplacerEnHaut(hauteurJeu, list);
+        retineDroite.setCenterX(oeilDroit.getCenterX());
+        retineGauche.setCenterX(oeilGauche.getCenterX());
+        retineDroite.setCenterY(oeilDroit.getCenterY()+1);
+        retineGauche.setCenterY(oeilGauche.getCenterY()+1);
     }
 
     @Override
-    public void deplacerEnHaut() {
-        super.deplacerEnHaut();
+    public void deplacerEnHaut(double hauteurJeu, ArrayList<Obstacles> list) {
+        super.deplacerEnHaut(hauteurJeu,list);
+        if (contactMur(list)) super.deplacerEnBas(hauteurJeu, list);
+        retineDroite.setCenterX(oeilDroit.getCenterX());
+        retineGauche.setCenterX(oeilGauche.getCenterX());
+        retineDroite.setCenterY(oeilDroit.getCenterY()-1);
+        retineGauche.setCenterY(oeilGauche.getCenterY()-1);
     }
     @Override
-    public void deplacrcontinue(double largeurJeu,double hauteurJeu){
-        super.deplacrcontinue(largeurJeu,hauteurJeu);
+    public void deplacrcontinue(double largeurJeu,double hauteurJeu,ArrayList<Obstacles> list){
+        super.deplacrcontinue(largeurJeu,hauteurJeu,list);
     }
 }
