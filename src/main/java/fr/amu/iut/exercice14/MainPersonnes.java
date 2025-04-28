@@ -1,4 +1,4 @@
-package fr.amu.iut.exercice4;
+package fr.amu.iut.exercice14;
 
 import javafx.beans.binding.IntegerBinding;
 import javafx.beans.property.IntegerProperty;
@@ -14,15 +14,51 @@ public class MainPersonnes {
     private static IntegerProperty nbParisiens;
 
     private static IntegerBinding calculAgeMoyen;
-    private static IntegerBinding calculnbParisiens;
+    private static IntegerBinding calculNbParisiens;
 
     public static void main(String[] args) {
-
         lesPersonnes = new SimpleListProperty<>(FXCollections.observableArrayList());
         ageMoyen = new SimpleIntegerProperty(0);
+        nbParisiens = new SimpleIntegerProperty(0);
+
+        // Création du binding pour l'âge moyen
+        calculAgeMoyen = new IntegerBinding() {
+            {
+                super.bind(lesPersonnes);
+            }
+
+            @Override
+            protected int computeValue() {
+                int totalAge = 0;
+                for (Personne personne : lesPersonnes) {
+                    totalAge += personne.getAge();
+                }
+                return lesPersonnes.size() > 0 ? totalAge / lesPersonnes.size() : 0;
+            }
+        };
+        ageMoyen.bind(calculAgeMoyen);
+
+        // Création du binding pour le nombre de Parisiens
+        calculNbParisiens = new IntegerBinding() {
+            {
+                super.bind(lesPersonnes);
+            }
+
+            @Override
+            protected int computeValue() {
+                int count = 0;
+                for (Personne personne : lesPersonnes) {
+                    if ("Paris".equals(personne.getVilleDeNaissance())) {
+                        count++;
+                    }
+                }
+                return count;
+            }
+        };
+        nbParisiens.bind(calculNbParisiens);
 
         question1();
-//        question2();
+        question2();
     }
 
     public static void question1() {
@@ -52,6 +88,4 @@ public class MainPersonnes {
             p.setVilleDeNaissance("Paris");
         System.out.println("Il y a " + nbParisiens.getValue() + " parisiens");
     }
-
 }
-

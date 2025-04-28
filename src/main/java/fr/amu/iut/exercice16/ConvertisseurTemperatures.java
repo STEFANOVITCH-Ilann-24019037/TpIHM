@@ -1,80 +1,88 @@
 package fr.amu.iut.exercice16;
 
 import javafx.application.Application;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.geometry.Insets;
+import javafx.geometry.Orientation;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.util.converter.NumberStringConverter;
 
 public class ConvertisseurTemperatures extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        // Création des panneaux pour Celsius et Fahrenheit
-        VBox panneauCelsius = new VBox(10);
-        VBox panneauFahrenheit = new VBox(10);
+        // Créer les propriétés pour les températures
+        DoubleProperty celsius = new SimpleDoubleProperty(0);
+        DoubleProperty fahrenheit = new SimpleDoubleProperty(32);
 
-        // Création des éléments pour le panneau Celsius
-        Label labelCelsius = new Label("Celsius:");
-        TextField textFieldCelsius = new TextField();
-        Button boutonVersFahrenheit = new Button("Convertir en Fahrenheit");
-        Label resultatFahrenheit = new Label();
+        Slider celsiusSlider = new Slider(0, 100, 0);
+        Slider fahrenheitSlider = new Slider(0, 212, 0);
 
-        // Création des éléments pour le panneau Fahrenheit
-        Label labelFahrenheit = new Label("Fahrenheit:");
-        TextField textFieldFahrenheit = new TextField();
-        Button boutonVersCelsius = new Button("Convertir en Celsius");
-        Label resultatCelsius = new Label();
+        celsiusSlider.setShowTickLabels(true);
+        celsiusSlider.setShowTickMarks(true);
+        celsiusSlider.setShowTickMarks(true);
+        celsiusSlider.setMajorTickUnit(10);
+        celsiusSlider.setMinorTickCount(1);
+        celsiusSlider.setBlockIncrement(10);
 
-        // Ajout des éléments aux panneaux
-        panneauCelsius.getChildren().addAll(labelCelsius, textFieldCelsius, boutonVersFahrenheit, resultatFahrenheit);
-        panneauFahrenheit.getChildren().addAll(labelFahrenheit, textFieldFahrenheit, boutonVersCelsius, resultatCelsius);
+        fahrenheitSlider.setShowTickLabels(true);
+        fahrenheitSlider.setShowTickMarks(true);
+        fahrenheitSlider.setShowTickMarks(true);
+        fahrenheitSlider.setMajorTickUnit(10);
+        fahrenheitSlider.setMinorTickCount(1);
+        fahrenheitSlider.setBlockIncrement(10);
 
-        // Configuration des actions des boutons
-        boutonVersFahrenheit.setOnAction(e -> {
-            try {
-                String celsiusText = textFieldCelsius.getText().replace(',', '.');
-                double celsius = Double.parseDouble(celsiusText);
-                double fahrenheit = celsiusToFahrenheit(celsius);
-                resultatFahrenheit.setText(String.format("%.2f Fahrenheit", fahrenheit));
-            } catch (NumberFormatException ex) {
-                resultatFahrenheit.setText("Veuillez entrer un nombre valide.");
-            }
+
+        celsiusSlider.setOrientation(Orientation.VERTICAL);
+        fahrenheitSlider.setOrientation(Orientation.VERTICAL);
+
+        TextField celsiusTextField = new TextField("0.00");
+        TextField fahrenheitTextField = new TextField("32.00");
+
+        celsius.bindBidirectional(celsiusSlider.valueProperty());
+        fahrenheit.bindBidirectional(fahrenheitSlider.valueProperty());
+
+        Bindings.bindBidirectional(celsiusTextField.textProperty(), celsius, new NumberStringConverter("0.00"));
+        Bindings.bindBidirectional(fahrenheitTextField.textProperty(), fahrenheit, new NumberStringConverter("0.00"));
+
+        // Conversion entre Celsius et Fahrenheit
+        celsius.addListener((obs, oldVal, newVal) -> {
+            double celsiusValue = newVal.doubleValue();
+            double fahrenheitValue = celsiusValue * 9 / 5 + 32;
+            fahrenheit.set(fahrenheitValue);
         });
 
-        boutonVersCelsius.setOnAction(e -> {
-            try {
-                String fahrenheitText = textFieldFahrenheit.getText().replace(',', '.');
-                double fahrenheit = Double.parseDouble(fahrenheitText);
-                double celsius = fahrenheitToCelsius(fahrenheit);
-                resultatCelsius.setText(String.format("%.2f Celsius", celsius));
-            } catch (NumberFormatException ex) {
-                resultatCelsius.setText("Veuillez entrer un nombre valide.");
-            }
+        fahrenheit.addListener((obs, oldVal, newVal) -> {
+            double fahrenheitValue = newVal.doubleValue();
+            double celsiusValue = (fahrenheitValue - 32) * 5 / 9;
+            celsius.set(celsiusValue);
         });
 
-        // Configuration de la disposition principale
-        HBox root = new HBox(30, panneauCelsius, panneauFahrenheit);
-        root.setPadding(new Insets(20));
+        Label celsiusLabel = new Label("Celsius");
+        Label fahrenheitLabel = new Label("Fahrenheit");
+        // Disposition des éléments
+        VBox celsiusVbox = new VBox(10,celsiusLabel, celsiusSlider,celsiusTextField );
+        VBox fahrenheitVbox = new VBox(10, fahrenheitLabel ,fahrenheitSlider, fahrenheitTextField);
 
-        // Configuration de la scène et de la fenêtre principale
-        primaryStage.setScene(new Scene(root));
-        primaryStage.setTitle("Convertisseur de Températures");
+        HBox root = new HBox(10, celsiusVbox, fahrenheitVbox);
+        root.setPadding(new Insets(10));
+
+
+
+        Scene scene = new Scene(root, 300, 400);
+
+        primaryStage.setTitle("Conversion de Température");
+        primaryStage.setScene(scene);
         primaryStage.show();
-    }
-
-    // Méthode de conversion de Celsius en Fahrenheit
-    private double celsiusToFahrenheit(double celsius) {
-        return (celsius * 9 / 5) + 32;
-    }
-
-    // Méthode de conversion de Fahrenheit en Celsius
-    private double fahrenheitToCelsius(double fahrenheit) {
-        return (fahrenheit - 32) * 5 / 9;
     }
 
     public static void main(String[] args) {

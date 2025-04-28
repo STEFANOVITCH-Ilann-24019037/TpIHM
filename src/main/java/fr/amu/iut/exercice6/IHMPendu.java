@@ -6,195 +6,174 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.KeyCode;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
+import javafx.scene.layout.VBox;
+
+import java.util.Arrays;
+import java.util.Random;
 
 public class IHMPendu extends Application {
 
-    private Dico dico;
     private String motADeviner;
-    private StringBuilder motAffiche;
-    private int tentativesRestantes;
-    private Label labelMot;
-    private Label labelTentatives;
-    private Label labelTentativesFausses;
-    private TextField champLettre;
-    private Button boutonRecommencer;
-    private StringBuilder tentativesFausses;
-    private ImageView imageView;
-    private Image perdu7;
-    private Image perdu6;
-    private Image perdu5;
-    private Image perdu4;
-    private Image perdu3;
-    private Image perdu2;
-    private Image perdu1;
-    private Image perdu0;
-    private Image gagne;
+    private char[] motCache;
+    private int nombreVies = 7;
+
+    private ImageView imagePendu;
+    private Label labelVies;
+    private Label labelMotCache;
+    private GridPane clavier;
+    private Dico dico = new Dico();
+    private Button boutonRejouer;
 
     @Override
-    public void start(Stage primaryStage) throws Exception {
-        perdu7 = chargerImage("/exercice6/pendu7.png");
-        perdu6 = chargerImage("/exercice6/pendu6.png");
-        perdu5 = chargerImage("/exercice6/pendu5.png");
-        perdu4 = chargerImage("/exercice6/pendu4.png");
-        perdu3 = chargerImage("/exercice6/pendu3.png");
-        perdu2 = chargerImage("/exercice6/pendu2.png");
-        perdu1 = chargerImage("/exercice6/pendu1.png");
-        perdu0 = chargerImage("/exercice6/pendu0.png");
-        gagne = chargerImage("/exercice6/penduWin.png");
+    public void start(Stage primaryStage) {
+        motADeviner = dico.getMot();
+        motCache = new char[motADeviner.length()];
+        Arrays.fill(motCache, '*');
 
-        primaryStage.setTitle("Jeu du pendu");
-        primaryStage.setWidth(500);
-        primaryStage.setHeight(650); // Augmenter la hauteur pour inclure l'image
+        imagePendu = new ImageView(new Image(getClass().getResourceAsStream("/exercice6/pendu7.png")));
+        labelVies = new Label("Nombre de vies : " + nombreVies);
+        labelMotCache = new Label(String.valueOf(motCache));
+        clavier = creerClavier();
 
-        labelMot = new Label();
-        labelTentatives = new Label();
-        labelTentativesFausses = new Label();
-        champLettre = new TextField();
-        boutonRecommencer = new Button("Recommencer");
-        imageView = new ImageView();
+        boutonRejouer = new Button("Rejouer");
+        boutonRejouer.setOnAction(event -> demarrerNouvellePartie());
+        HBox rejouerBox = new HBox(boutonRejouer); // Créer un HBox pour centrer le bouton
+        rejouerBox.setAlignment(Pos.CENTER);
+        rejouerBox.setPadding(new Insets(10)); // Ajouter un peu de marge autour du bouton
 
-        initialiserJeu();
+        BorderPane root = new BorderPane();
+        root.setTop(new HBox(10, imagePendu, labelVies));
+        BorderPane.setAlignment(root.getTop(), Pos.CENTER);
+        BorderPane.setMargin(root.getTop(), new Insets(10));
 
-        boutonRecommencer.setOnAction(e -> recommencerJeu());
+        root.setCenter(labelMotCache);
+        BorderPane.setAlignment(root.getCenter(), Pos.CENTER);
+        BorderPane.setMargin(root.getCenter(), new Insets(20));
 
-        champLettre.setOnKeyPressed(event -> {
-            if (event.getCode() == KeyCode.ENTER) {
-                devinerMotOuLettre();
+        root.setBottom(clavier); // Le clavier reste en bas (partie "bottom")
+        BorderPane.setAlignment(root.getBottom(), Pos.CENTER);
+        BorderPane.setMargin(root.getBottom(), new Insets(10));
+
+        root.setBottom(new VBox(clavier, rejouerBox)); // Les placer verticalement dans la partie "bottom"
+        BorderPane.setAlignment(root.getBottom(), Pos.CENTER);
+
+        Scene scene = new Scene(root, 400, 500); // Augmenter légèrement la hauteur
+
+        scene.setOnKeyPressed(event -> {
+            String lettre = event.getText();
+            if (lettre.length() == 1 && Character.isLetter(lettre.charAt(0))) {
+                char lettreChoisie = Character.toLowerCase(lettre.charAt(0));
+                for (javafx.scene.Node node : clavier.getChildren()) {
+                    if (node instanceof Button && ((Button) node).getText().equalsIgnoreCase(String.valueOf(lettreChoisie)) && !node.isDisabled()) {
+                        gererLettreCliquee(lettreChoisie);
+                        break;
+                    }
+                }
             }
         });
 
-        VBox layout = new VBox(10, labelMot, labelTentatives, champLettre, boutonRecommencer, labelTentativesFausses, imageView);
-        layout.setPadding(new Insets(20));
-        layout.setAlignment(Pos.CENTER);
-
-        Scene scene = new Scene(layout);
+        primaryStage.setTitle("Jeu du Pendu");
         primaryStage.setScene(scene);
         primaryStage.show();
     }
 
-    private void initialiserJeu() {
-        dico = new Dico();
+    private void demarrerNouvellePartie() {
         motADeviner = dico.getMot();
-        motAffiche = new StringBuilder("_ ".repeat(motADeviner.length()));
-        tentativesRestantes = 7; // Commencer avec 7 tentatives pour correspondre aux images
-        tentativesFausses = new StringBuilder();
+        motCache = new char[motADeviner.length()];
+        Arrays.fill(motCache, '*');
+        nombreVies = 7;
+        labelVies.setText("Nombre de vies : " + nombreVies);
+        labelMotCache.setText(String.valueOf(motCache));
+        imagePendu.setImage(new Image(getClass().getResourceAsStream("/exercice6/pendu7.png")));
 
-        labelMot.setText(motAffiche.toString());
-        labelTentatives.setText("Tentatives restantes: " + tentativesRestantes);
-        labelTentativesFausses.setText("Tentatives fausses: ");
-        champLettre.clear();
-        champLettre.setDisable(false);
-        imageView.setImage(perdu7); // Afficher l'image initiale
-    }
-
-    private void devinerMotOuLettre() {
-        String entree = champLettre.getText().toLowerCase();
-
-        if (entree.length() == 1) {
-            devinerLettre(entree.charAt(0));
-        } else {
-            devinerMot(entree);
+        // Réactiver tous les boutons du clavier
+        for (javafx.scene.Node node : clavier.getChildren()) {
+            if (node instanceof Button) {
+                node.setDisable(false);
+            }
         }
-
-        champLettre.clear();
+        boutonRejouer.setDisable(false); // Réactiver le bouton Rejouer si nécessaire
     }
 
-    private void devinerLettre(char caractere) {
+    private GridPane creerClavier() {
+        GridPane gridPane = new GridPane();
+        gridPane.setAlignment(Pos.CENTER);
+        gridPane.setHgap(5);
+        gridPane.setVgap(5);
+
+        String alphabet = "abcdefghijklmnopqrstuvwxyz";
+        int row = 0;
+        int col = 0;
+
+        for (char lettre : alphabet.toCharArray()) {
+            Button boutonLettre = new Button(String.valueOf(lettre).toUpperCase());
+            boutonLettre.setOnAction(event -> gererLettreCliquee(lettre));
+            gridPane.add(boutonLettre, col, row);
+            col++;
+            if (col > 6) { // Organiser les lettres sur plusieurs lignes
+                col = 0;
+                row++;
+            }
+        }
+        return gridPane;
+    }
+
+    private void gererLettreCliquee(char lettre) {
         boolean lettreTrouvee = false;
-
-        for (int i : dico.getPositions(caractere, motADeviner)) {
-            motAffiche.setCharAt(i * 2, caractere); // Mettre à jour les positions paires
-            lettreTrouvee = true;
+        for (int i = 0; i < motADeviner.length(); i++) {
+            if (motADeviner.charAt(i) == lettre) {
+                motCache[i] = lettre;
+                lettreTrouvee = true;
+            }
         }
+
+        labelMotCache.setText(String.valueOf(motCache));
 
         if (!lettreTrouvee) {
-            tentativesRestantes--;
-            tentativesFausses.append(caractere).append(" ");
-            labelTentativesFausses.setText("Tentatives fausses: " + tentativesFausses.toString());
-            mettreAJourImage();
+            nombreVies--;
+            labelVies.setText("Nombre de vies : " + nombreVies);
+            // Mettre à jour l'image du pendu en fonction de nombreVies
+            int imageIndex = 7 - nombreVies;
+            if (imageIndex >= 0 && imageIndex <= 7) {
+                imagePendu.setImage(new Image(getClass().getResourceAsStream("/exercice6/pendu" + imageIndex + ".png")));
+            }
         }
 
-        labelMot.setText(motAffiche.toString());
-        labelTentatives.setText("Tentatives restantes: " + tentativesRestantes);
-
-        if (motAffiche.toString().replace(" ", "").equals(motADeviner)) {
-            labelMot.setText("Félicitations! Vous avez gagné!");
-            imageView.setImage(gagne);
-            desactiverChamps();
-        } else if (tentativesRestantes == 0) {
-            labelMot.setText("Vous avez perdu! Le mot était: " + motADeviner);
-            desactiverChamps();
+        if (String.valueOf(motCache).equals(motADeviner)) {
+            labelMotCache.setText("Vous avez gagné ! Le mot était : " + motADeviner);
+            desactiverClavier();
+            boutonRejouer.setDisable(false); // Activer le bouton Rejouer
+        } else if (nombreVies == 0) {
+            labelMotCache.setText("Vous avez perdu ! Le mot était : " + motADeviner);
+            imagePendu.setImage(new Image(getClass().getResourceAsStream("/exercice6/pendu0.png"))); // Image de la défaite
+            desactiverClavier();
+            boutonRejouer.setDisable(false); // Activer le bouton Rejouer
         }
-    }
 
-    private void devinerMot(String mot) {
-        if (mot.equals(motADeviner)) {
-            labelMot.setText("Félicitations! Vous avez gagné!");
-            imageView.setImage(gagne);
-            desactiverChamps();
-        } else {
-            tentativesRestantes--;
-            tentativesFausses.append(mot).append(" ");
-            labelTentativesFausses.setText("Tentatives fausses: " + tentativesFausses.toString());
-            labelTentatives.setText("Tentatives restantes: " + tentativesRestantes);
-            mettreAJourImage();
-            if (tentativesRestantes == 0) {
-                labelMot.setText("Vous avez perdu! Le mot était: " + motADeviner);
-                desactiverChamps();
+        // Désactiver le bouton de la lettre cliquée
+        for (javafx.scene.Node node : clavier.getChildren()) {
+            if (node instanceof Button && ((Button) node).getText().equalsIgnoreCase(String.valueOf(lettre))) {
+                node.setDisable(true);
+                break;
             }
         }
     }
 
-    private void mettreAJourImage() {
-        switch (tentativesRestantes) {
-            case 6:
-                imageView.setImage(perdu6);
-                break;
-            case 5:
-                imageView.setImage(perdu5);
-                break;
-            case 4:
-                imageView.setImage(perdu4);
-                break;
-            case 3:
-                imageView.setImage(perdu3);
-                break;
-            case 2:
-                imageView.setImage(perdu2);
-                break;
-            case 1:
-                imageView.setImage(perdu1);
-                break;
-            case 0:
-                imageView.setImage(perdu0);
-                break;
+    private void desactiverClavier() {
+        for (javafx.scene.Node node : clavier.getChildren()) {
+            if (node instanceof Button) {
+                ((Button) node).setDisable(true);
+            }
         }
-    }
-
-    private void recommencerJeu() {
-        initialiserJeu();
-    }
-
-    private void desactiverChamps() {
-        champLettre.setDisable(true);
     }
 
     public static void main(String[] args) {
         launch(args);
-    }
-
-    private Image chargerImage(String chemin) {
-        try {
-            return new Image(getClass().getResource(chemin).toExternalForm());
-        } catch (Exception e) {
-            System.err.println("Impossible de charger l'image : " + chemin);
-            return null;
-        }
     }
 }

@@ -2,73 +2,114 @@ package fr.amu.iut.exercice11;
 
 import javafx.application.Application;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
-@SuppressWarnings("Duplicates")
 public class Palette extends Application {
 
     private int nbVert = 0;
     private int nbRouge = 0;
     private int nbBleu = 0;
 
-    private Label texteDuHaut;
-
     private Button vert;
     private Button rouge;
     private Button bleu;
 
     private BorderPane root;
-    private Pane panneau;
-    private HBox boutons;
-
-    private Label texteDuBas;
-
-
+    private Label label;
+    private VBox panneau;
+    private HBox bas;
+    private Rectangle rectangle;
+    private Label phraseCouleur ;
     @Override
     public void start(Stage primaryStage) {
+
         root = new BorderPane();
-
-        texteDuHaut = new Label();
-        texteDuHaut.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
-        BorderPane.setAlignment(texteDuHaut, Pos.CENTER);
-
-        panneau = new Pane();
-        panneau.setPrefSize(400, 200);
-
-        VBox bas = new VBox();
-        boutons = new HBox(10);
-        boutons.setAlignment(Pos.CENTER);
-        boutons.setPadding(new Insets(10, 5, 10, 5));
-        texteDuBas = new Label();
-        bas.setAlignment(Pos.CENTER_RIGHT);
-        bas.getChildren().addAll(boutons, texteDuBas);
-
+        BorderPane lowroot = new BorderPane();
+        label = new Label("Vert: " + nbVert + ", Rouge: " + nbRouge + ", Bleu: " + nbBleu);
+        phraseCouleur = new Label();
+        panneau = new VBox(10);
+        bas = new HBox(10);
+        rectangle = new Rectangle(200, 200, Color.WHITE);
         vert = new Button("Vert");
         rouge = new Button("Rouge");
         bleu = new Button("Bleu");
 
-        /* VOTRE CODE ICI */
+        vert.setOnAction(e -> {
+            incrementerVert();
+            mettreAJourCouleur();
+        });
+        rouge.setOnAction(e -> {
+            incrementerRouge();
+            mettreAJourCouleur();
+        });
+        bleu.setOnAction(e -> {
+            incrementerBleu();
+            mettreAJourCouleur();
+        });
 
-        boutons.getChildren().addAll(vert, rouge, bleu);
+        bas.getChildren().addAll(vert, rouge, bleu);
+        bas.setPadding(new Insets(10));
 
+        lowroot.setCenter(bas);
+        lowroot.setBottom(phraseCouleur);
+
+        panneau.getChildren().add(rectangle);
+        panneau.setPadding(new Insets(10));
+
+        root.setTop(label);
         root.setCenter(panneau);
-        root.setTop(texteDuHaut);
-        root.setBottom(bas);
+        root.setBottom(lowroot);
 
-        Scene scene = new Scene(root);
-
+        // Configuration de la scène
+        Scene scene = new Scene(root, 300, 300);
+        primaryStage.setTitle("Palette de Couleurs");
         primaryStage.setScene(scene);
         primaryStage.show();
     }
-}
 
+    private void incrementerVert() {
+        nbVert++;
+        mettreAJourLabel("Vert");
+    }
+
+    private void incrementerRouge() {
+        nbRouge++;
+        mettreAJourLabel("Rouge");
+    }
+
+    private void incrementerBleu() {
+        nbBleu++;
+        mettreAJourLabel("Bleu");
+    }
+
+    private void mettreAJourLabel(String couleur) {
+        label.setText("Vert: " + nbVert + ", Rouge: " + nbRouge + ", Bleu: " + nbBleu);
+        phraseCouleur.setText("le " +couleur + " est une joile couleur");
+        phraseCouleur.setTextFill(Color.color(getR(),getG(),getD()));
+    }
+
+    private void mettreAJourCouleur() {
+        double r = getR();
+        double g = getG();
+        double b = getD();
+        rectangle.setFill(Color.color(r, g, b));
+    }
+    private double getR(){
+        return Math.min(nbRouge / 10.0, 1.0);
+    }
+    private double getG(){
+        return Math.min(nbVert / 10.0, 1.0);
+    }
+    private double getD(){
+        return Math.min(nbBleu / 10.0, 1.0);
+    }
+
+}
